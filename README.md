@@ -20,19 +20,19 @@ Habit are input via CLI and tagged with a category.
 It will make the most semantic sense for you to use a [gerund phrase](https://en.wikipedia.org/wiki/Gerund) 
 Example: `habit start 'Reaching out to friends' --tag social --shortName chatting`
 
-A `tag` will group the habit with other habits in the same tag when displayed
+A `tag` will group the habit with other habits in the same tag when displayed.
 A `shortName` is an optional shorter way to refer to the habit when updating it. If not supplied, the first word will be used.
 
 
 ### Track Habit Progress 
 
-To track progress you've made toward a longterm goal / set of habis, is considered a "tick"
+Use a "tick" to track progress you've made toward a longterm goal / set of habits.
 Example: `habit tick chatting`
 
 
 ### Visualize 
 
-Beautiful colorized visualizations of your progress are at the heart of this project!What better way to be proud of the progress you've made?
+Beautiful colorized visualizations of your progress are at the heart of this project! What better way to be proud of the progress you've made?
 
 There are two ways to visualize, `list` and `hist`
 
