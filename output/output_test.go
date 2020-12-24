@@ -105,9 +105,13 @@ func TestColorAssignmentSingleTagOverflow(t *testing.T) {
 		want = append(want, ColorCodeOffset+i)
 	}
 	// remaining items overflow into modulated colors
+	// at the tail of the next row
 	modulateBy := uint8(36)
 	for i := ColorGroupLength; i < uint8(len(ordered)); i++ {
-		want = append(want, ColorCodeOffset+i+modulateBy+ColorGroupLength-i%ColorGroupLength)
+		baseColor := ColorCodeOffset
+		rowLength := ColorGroupLength
+		overrun := i % ColorGroupLength
+		want = append(want, baseColor+modulateBy+rowLength-1-overrun)
 	}
 
 	if !reflect.DeepEqual(colorAssignments.ColorOrder, want[:]) {

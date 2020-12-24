@@ -117,31 +117,40 @@ func buildColorOrder(habits habits.HabitList) *ColorAssignments {
 	// Build color pallete from base color
 	// Each group of 6x3 is a pallete.
 	// Offset 160 dark colors
-	tagChanged := true
 	modulate := false
-	var tagIndex, habitIndex, modulation uint8 = 0, 0, 0
+	var direction int8 = 1 // This accomplishes the zig-zag pattern of modulation
+	var tagIndex, habitIndex uint8 = 0, 0
+	var modulation int8 = 0 // TODO: we'd get invalid colors if > 18 habits per tag. Add guards
+
 	for index, habit := range habits {
 		// Reset groupings for each new tag
 		if index > 0 && habit.Tag != habits[index-1].Tag {
-			tagChanged = true
 			tagIndex++
 			habitIndex = 0
 			ca.TagBoundaries = append(ca.TagBoundaries, index)
 			ca.Tags = append(ca.Tags, habit.Tag)
 			modulate = false
 			modulation = 0
+			direction = 1
 		}
 		// If there are more than 6 habits per tag
 		// "modulate" to the next row of ansi colors
 		// and zig zag back towards the start of the group
+		// TODO: there may be a better way to group colors that doesn't lead to math
+		// TODO: do i get any benefit from keeping everything as uint8 if i just have to cast?
+		overrun := int8(habitIndex % ColorGroupLength)
+		modulate = habitIndex > 0 && overrun == 0
 		if modulate {
-			modulation += 36 + ColorGroupLength - habitIndex%ColorGroupLength - 1
+			direction *= -1
+			modulation += 36
+			// zig
+			if direction == -1 {
+				modulation += int8(ColorGroupLength - 1)
+			}
 		}
-		if tagChanged {
-			baseColor := uint8(tagIndex*ColorGroupLength + ColorCodeOffset)
-			colorAssignment := baseColor + uint8(habitIndex) + modulation
-			ca.ColorOrder[index] = colorAssignment
-		}
+		baseColor := tagIndex*ColorGroupLength + ColorCodeOffset
+		colorAssignment := baseColor + uint8(direction*overrun+modulation)
+		ca.ColorOrder[index] = colorAssignment
 		habitIndex++
 	}
 	// Edge case for the last tag where there is no change
