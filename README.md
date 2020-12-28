@@ -6,7 +6,9 @@ What sets it apart from other task managers is its focus on habitual, repetitive
 
 `habit` understands that some items need a little work every day, and typically (unless there's something looming over your head it's hard to find the motivation to keep that daily work up!
 
-## (TODO) screenshots
+## Screenshots
+![list-example](docs/images/list-example.png)
+
 
 ## Quick Start
 
