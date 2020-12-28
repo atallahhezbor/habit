@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/ryanuber/columnize"
 	"math"
+	"math/rand"
 	"sort"
 	"strings"
 	"time"
@@ -190,4 +191,19 @@ func Hist(habitMap habits.HabitMap) {
 		}
 		fmt.Println()
 	}
+}
+
+// Suggest pulls a random habit and displays it to the console
+func Suggest(habitMap habits.HabitMap) {
+	// TODO: this is another case where persisting the color order / sorted list would be nice
+	orderedHabits := orderByTag(habitMap)
+	colorAssignments := buildColorOrder(orderedHabits)
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	randomIndex := rand.Intn(len(orderedHabits))
+	habitName := orderedHabits[randomIndex].Name
+	fmt.Printf("Hmm, you about you try ")
+	colorToUse := colorAssignments.ColorOrder[randomIndex]
+	color.S256(colorToUse).Print(strings.ToLower(habitName))
+	fmt.Print("?\n")
 }
