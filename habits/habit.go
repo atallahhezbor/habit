@@ -1,6 +1,7 @@
 package habits
 
 import (
+	"math"
 	"time"
 )
 
@@ -21,6 +22,19 @@ func New(name, shortName, tag string) *Habit {
 // Tick indicates that an instance of the habit occurred by appending to `occurrences`
 func (h *Habit) Tick() {
 	h.Occurrences = append(h.Occurrences, time.Now())
+}
+
+// DaysSinceLastTick returns the integer number of days
+// that have passed since the last occurrence
+func (h *Habit) DaysSinceLastTick() int {
+	numOccurrences := len(h.Occurrences)
+	daysSince := -1
+	if numOccurrences > 0 {
+		lastOccurrence := h.Occurrences[numOccurrences-1]
+		hoursSince := time.Now().Sub(lastOccurrence).Hours()
+		daysSince = int(math.Floor(hoursSince)) / 24
+	}
+	return daysSince
 }
 
 // HabitList is an array of Habit pointers

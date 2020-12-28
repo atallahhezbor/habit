@@ -5,7 +5,6 @@ import (
 	"github.com/atallahhezbor/habit/habits"
 	"github.com/gookit/color"
 	"github.com/ryanuber/columnize"
-	"math"
 	"math/rand"
 	"sort"
 	"strings"
@@ -19,6 +18,7 @@ const ColorGroupLength uint8 = 6
 var ColorCodeOffset uint8 = 166
 
 func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	// TODO: accept color overrides from config, perhaps for light terminal themes
 	// viper.SetDefault("color-overrides", DEFAULT_COLORS)
 	// TODO: accept offset from config
@@ -56,13 +56,7 @@ func List(habitMap habits.HabitMap) {
 	byTag := map[string][]HabitEntry{}
 
 	for index, h := range orderedHabits {
-		numOccurrences := len(h.Occurrences)
-		daysSince := -1
-		if numOccurrences > 0 {
-			lastOccurrence := h.Occurrences[numOccurrences-1]
-			hoursSince := time.Now().Sub(lastOccurrence).Hours()
-			daysSince = int(math.Floor(hoursSince)) / 24
-		}
+		daysSince := h.DaysSinceLastTick()
 		// TODO: Optimization, persist this formatted string in Habit objects
 		// But there's trickiness since the index is part of this string
 		habitStrings[index] = fmt.Sprintf("%d. | %s | %s | ^%d days since last tick\n", index, h.Name, h.ShortName, daysSince)
@@ -193,16 +187,29 @@ func Hist(habitMap habits.HabitMap) {
 	}
 }
 
+// TODO: would it be more efficient to reuse the same slice
+// if i'll be slicing it up further?
+func filterUnticked(habitList habits.HabitList) habits.HabitList {
+	unticked := make(habits.HabitList, 0, len(habitList))
+	for _, habit := range habitList {
+		daysSince := habit.DaysSinceLastTick()
+		if daysSince > 0 || daysSince == -1 {
+			unticked = append(unticked, habit)
+		}
+	}
+	return unticked
+}
+
 // Suggest pulls a random habit and displays it to the console
 func Suggest(habitMap habits.HabitMap) {
 	// TODO: this is another case where persisting the color order / sorted list would be nice
 	orderedHabits := orderByTag(habitMap)
-	colorAssignments := buildColorOrder(orderedHabits)
-	rand.Seed(time.Now().UTC().UnixNano())
+	filteredHabits := filterUnticked(orderedHabits)
+	colorAssignments := buildColorOrder(filteredHabits)
 
-	randomIndex := rand.Intn(len(orderedHabits))
-	habitName := orderedHabits[randomIndex].Name
-	fmt.Printf("Hmm, you about you try ")
+	randomIndex := rand.Intn(len(filteredHabits))
+	habitName := filteredHabits[randomIndex].Name
+	fmt.Printf("Hmm, how about you try ")
 	colorToUse := colorAssignments.ColorOrder[randomIndex]
 	color.S256(colorToUse).Print(strings.ToLower(habitName))
 	fmt.Print("?\n")
