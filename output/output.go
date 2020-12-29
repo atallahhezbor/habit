@@ -17,6 +17,9 @@ const ColorGroupLength uint8 = 6
 // ColorCodeOffset defines where on the ANSI color chart to start
 var ColorCodeOffset uint8 = 166
 
+// TODO: consider coming up with more and pulling a random one
+const suggestionPhrase string = "Hmm, how about you try "
+
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	// TODO: accept color overrides from config, perhaps for light terminal themes
@@ -200,17 +203,49 @@ func filterUnticked(habitList habits.HabitList) habits.HabitList {
 	return unticked
 }
 
+func getUntickedIndexes(habitList habits.HabitList) []int {
+	unticked := make([]int, 0, len(habitList))
+	for index, habit := range habitList {
+		daysSince := habit.DaysSinceLastTick()
+		if daysSince > 0 || daysSince == -1 {
+			unticked = append(unticked, index)
+		}
+	}
+	return unticked
+}
+
 // Suggest pulls a random habit and displays it to the console
 func Suggest(habitMap habits.HabitMap) {
+	if len(habitMap) == 0 {
+		noHabits()
+		return
+	}
+
 	// TODO: this is another case where persisting the color order / sorted list would be nice
 	orderedHabits := orderByTag(habitMap)
-	filteredHabits := filterUnticked(orderedHabits)
-	colorAssignments := buildColorOrder(filteredHabits)
+	colorAssignments := buildColorOrder(orderedHabits)
+	indexPool := getUntickedIndexes(orderedHabits)
 
-	randomIndex := rand.Intn(len(filteredHabits))
-	habitName := filteredHabits[randomIndex].Name
-	fmt.Printf("Hmm, how about you try ")
-	colorToUse := colorAssignments.ColorOrder[randomIndex]
+	habitIndexToSuggest := rand.Intn(len(orderedHabits))
+	if len(indexPool) > 0 {
+		fmt.Print(suggestionPhrase)
+		randomIndex := rand.Intn(len(indexPool))
+		habitIndexToSuggest = indexPool[randomIndex]
+	}
+
+	fmt.Print(suggestionPhrase)
+	habitToSuggest := orderedHabits[habitIndexToSuggest]
+	habitName := habitToSuggest.Name
+	colorToUse := colorAssignments.ColorOrder[habitIndexToSuggest]
 	color.S256(colorToUse).Print(strings.ToLower(habitName))
 	fmt.Print("?\n")
+}
+
+// EmptyOutput outputs explanatory text for cases where
+// no habits have been created yet
+func noHabits() {
+	fmt.Println(`You haven't created any habits yet.
+				Try running
+					habit start --help
+				to get started`)
 }
