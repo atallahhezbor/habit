@@ -5,7 +5,7 @@ import (
 	"github.com/atallahhezbor/habit/habits"
 	"github.com/gookit/color"
 	"github.com/ryanuber/columnize"
-	"math"
+	"math/rand"
 	"sort"
 	"strings"
 	"time"
@@ -17,7 +17,11 @@ const ColorGroupLength uint8 = 6
 // ColorCodeOffset defines where on the ANSI color chart to start
 var ColorCodeOffset uint8 = 166
 
+// TODO: consider coming up with more and pulling a random one
+const suggestionPhrase string = "Hmm, how about you try "
+
 func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	// TODO: accept color overrides from config, perhaps for light terminal themes
 	// viper.SetDefault("color-overrides", DEFAULT_COLORS)
 	// TODO: accept offset from config
@@ -55,13 +59,7 @@ func List(habitMap habits.HabitMap) {
 	byTag := map[string][]HabitEntry{}
 
 	for index, h := range orderedHabits {
-		numOccurrences := len(h.Occurrences)
-		daysSince := -1
-		if numOccurrences > 0 {
-			lastOccurrence := h.Occurrences[numOccurrences-1]
-			hoursSince := time.Now().Sub(lastOccurrence).Hours()
-			daysSince = int(math.Floor(hoursSince)) / 24
-		}
+		daysSince := h.DaysSinceLastTick()
 		// TODO: Optimization, persist this formatted string in Habit objects
 		// But there's trickiness since the index is part of this string
 		habitStrings[index] = fmt.Sprintf("%d. | %s | %s | ^%d days since last tick\n", index, h.Name, h.ShortName, daysSince)
@@ -190,4 +188,64 @@ func Hist(habitMap habits.HabitMap) {
 		}
 		fmt.Println()
 	}
+}
+
+// TODO: would it be more efficient to reuse the same slice
+// if i'll be slicing it up further?
+func filterUnticked(habitList habits.HabitList) habits.HabitList {
+	unticked := make(habits.HabitList, 0, len(habitList))
+	for _, habit := range habitList {
+		daysSince := habit.DaysSinceLastTick()
+		if daysSince > 0 || daysSince == -1 {
+			unticked = append(unticked, habit)
+		}
+	}
+	return unticked
+}
+
+func getUntickedIndexes(habitList habits.HabitList) []int {
+	unticked := make([]int, 0, len(habitList))
+	for index, habit := range habitList {
+		daysSince := habit.DaysSinceLastTick()
+		if daysSince > 0 || daysSince == -1 {
+			unticked = append(unticked, index)
+		}
+	}
+	return unticked
+}
+
+// Suggest pulls a random habit and displays it to the console
+func Suggest(habitMap habits.HabitMap) {
+	if len(habitMap) == 0 {
+		noHabits()
+		return
+	}
+
+	// TODO: this is another case where persisting the color order / sorted list would be nice
+	orderedHabits := orderByTag(habitMap)
+	colorAssignments := buildColorOrder(orderedHabits)
+	indexPool := getUntickedIndexes(orderedHabits)
+
+	habitIndexToSuggest := rand.Intn(len(orderedHabits))
+	if len(indexPool) > 0 {
+		fmt.Print(suggestionPhrase)
+		randomIndex := rand.Intn(len(indexPool))
+		habitIndexToSuggest = indexPool[randomIndex]
+	}
+
+	fmt.Print(suggestionPhrase)
+	habitToSuggest := orderedHabits[habitIndexToSuggest]
+	habitName := habitToSuggest.Name
+	colorToUse := colorAssignments.ColorOrder[habitIndexToSuggest]
+	color.S256(colorToUse).Print(strings.ToLower(habitName))
+	fmt.Print("?\n")
+}
+
+// EmptyOutput outputs explanatory text for cases where
+// no habits have been created yet
+func noHabits() {
+	fmt.Println(`You haven't created any habits yet.
+				Try running
+					habit start --help
+				to get started`)
 }

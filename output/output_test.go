@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -18,6 +19,11 @@ var multiTagMap = map[string]*habits.Habit{
 }
 
 var singleTagMap = map[string]*habits.Habit{
+	"0": habits.New("apple", "0", "a"),
+	"1": habits.New("zebra", "1", "a"),
+}
+
+var singleTagMapTicked = map[string]*habits.Habit{
 	"0": habits.New("apple", "0", "a"),
 	"1": habits.New("zebra", "1", "a"),
 }
@@ -146,5 +152,66 @@ func TestHistogramOutput(t *testing.T) {
 		// as I'm having trouble getting the piped output
 		// to properly format
 		// t.Errorf("got %s\n, want %s", got, want)
+	}
+}
+
+func TestSuggestionEmpty(t *testing.T) {
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	Suggest(emptyMap)
+
+	w.Close()
+	out, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	got := string(out)
+
+	dontWant := suggestionPhrase
+
+	if strings.HasPrefix(got, dontWant) {
+		t.Errorf("Got a suggestion '%s' in an empty map", got)
+	}
+}
+
+func TestSuggestionSingleCompleted(t *testing.T) {
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	Suggest(singleTagMap)
+
+	w.Close()
+	out, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	got := string(out)
+
+	want := suggestionPhrase
+
+	if !strings.HasPrefix(got, want) {
+		t.Errorf("got %s, want something that starts with %s", got, want)
+	}
+}
+
+func TestSuggestionSingleUnticked(t *testing.T) {
+	singleTagMapTicked["0"].Tick()
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	Suggest(singleTagMapTicked)
+
+	w.Close()
+	out, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	got := string(out)
+
+	want := suggestionPhrase
+
+	if !strings.HasPrefix(got, want) {
+		t.Errorf("got %s, want something that starts with %s", got, want)
 	}
 }

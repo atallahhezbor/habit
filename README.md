@@ -20,7 +20,7 @@ Proper packaging coming soon. For now run `go build` followed by `./habit help`
 Habit are input via CLI and tagged with a category.
 
 It will make the most semantic sense for you to use a [gerund phrase](https://en.wikipedia.org/wiki/Gerund) 
-Example: `habit start 'Reaching out to friends' --tag social --shortName chatting`
+Example: `habit start 'Reaching out to friends' --tag social --short chatting`
 
 A `tag` will group the habit with other habits in the same tag when displayed.
 A `shortName` is an optional shorter way to refer to the habit when updating it. If not supplied, the first word will be used.
@@ -47,6 +47,16 @@ Example: `habit list`
 Output a "histogram" of sorts to show your dilligence towards all your habits. This is very naive currently. Proper aggregation is soon to come.
 
 Example: `habit hist`
+
+### Get Prompted!
+
+If you're at a loss for what to do, you can ask `habit` for a suggestion, and it'll output a random habit of yours
+
+Example:
+```
+$ habit suggest
+Hmm, you about you try listening to a new podcast?
+```
 
 
 
