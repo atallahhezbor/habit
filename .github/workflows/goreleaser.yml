@@ -1,6 +1,7 @@
 name: goreleaser
 
 on:
+  pull_request:
   push:
     tags:
       - '*'
@@ -27,3 +28,9 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Upload assets
+        uses: actions/upload-artifact@v2
+        with:
+          name: habit
+          path: dist/*
