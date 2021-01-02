@@ -6,9 +6,9 @@ builds:
 
     # Custom ldflags templates.
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    # omitting main.Date will make builds reproducible
     ldflags:
-     - -s -w -X main.build={{.Version}}
-     - ./usemsan=-msan
+     - -s -w -X main.version={{.Version}} -X main.commit.={{.Commit}}
 
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
