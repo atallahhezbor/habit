@@ -1,10 +1,10 @@
 # habit 
 
-`habit` is a CLI tool for tracking and visualizing your habits
+`habit` is a CLI tool for tracking and visualizing your habits.
 
-What sets it apart from other task managers is its focus on habitual, repetitive tasks, as opposed to tasks that go away after completion, offering a means to maintain, track, and visualize your progress on tasks that serve more long term, personal goals.
+What sets it apart from other task managers is its focus on habitual, repetitive tasks, as opposed to tasks that go away after completioni, offering a means to maintain, track, and visualize your progress on tasks that serve more long term, personal goals.
 
-`habit` understands that some items need a little work every day, and typically (unless there's something looming over your head it's hard to find the motivation to keep that daily work up!
+`habit` understands that some items need a little work every day, and seeing that progress grow is good motivation to keep that daily work up!
 
 ## Screenshots
 ![list-example](docs/images/list-example.png)
@@ -12,7 +12,32 @@ What sets it apart from other task managers is its focus on habitual, repetitive
 
 ## Quick Start
 
-Proper packaging coming soon. For now run `go build` followed by `./habit help`
+### Install
+You can download the latest release for your platform [here](https://github.com/atallahhezbor/habit/releases/latest) and place it somewhere on your `PATH`
+
+or if you have go installed you can simply run
+```
+go get github.com/atallahhezbor/habit
+```
+
+### Create/Track
+Once installed, create a habit to track a goal. For example:
+
+`habit start 'Going for walks' --tag health --short walking`
+
+Track your progress on this habit with the following
+
+`habit tick walking`
+
+Visualize your progress like so
+
+```
+$ habit hist
+Task    |Ticks
+walking |■|■|
+```
+and you'll see a symbol for each occurrence
+
 ## Features
 
 ### Create Habits
